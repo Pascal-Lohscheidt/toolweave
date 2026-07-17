@@ -3,6 +3,9 @@ export type { ExecuteTypescriptToolDescriptor, RuntimeOptions, ToolweaveRuntime 
 export { generateDeclarations } from './tools/codegen';
 export { NoneChecker } from './checker/none';
 export { InProcessChecker } from './checker/inprocess';
+export { TsgoChecker } from './checker/tsgo';
+export type { TsgoCheckerOptions } from './checker/tsgo';
+export { FallbackChecker } from './checker/fallback';
 export { QuickJSSandbox } from './sandbox/quickjs';
 export type { QuickJSSandboxOptions } from './sandbox/quickjs';
 export { defineTool } from './tools/define';

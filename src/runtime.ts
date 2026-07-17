@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  CheckerUnavailableError,
   SandboxError,
   SandboxMemoryError,
   SandboxRuntimeError,
@@ -11,8 +10,10 @@ import {
 } from './errors';
 import { EXECUTE_SUFFIX, wrapProgram } from './program/wrap';
 import { QuickJSSandbox } from './sandbox/quickjs';
+import { FallbackChecker } from './checker/fallback';
 import { InProcessChecker } from './checker/inprocess';
 import { NoneChecker } from './checker/none';
+import { TsgoChecker } from './checker/tsgo';
 import { generateDeclarations } from './tools/codegen';
 import type { AnyTool } from './tools/define';
 import { stripTypes } from './transpile';
@@ -66,7 +67,7 @@ const DEFAULT_LIMITS: SandboxLimits = { timeoutMs: 10_000, memoryMb: 64 };
 
 export function createRuntime(options: RuntimeOptions): ToolweaveRuntime {
   const decls = generateDeclarations(options.tools);
-  const checker = resolveChecker(options.checker ?? 'in-process');
+  const checker = resolveChecker(options.checker ?? 'tsgo');
   const sandbox = resolveSandbox(options.sandbox ?? 'quickjs');
   const limits = { ...DEFAULT_LIMITS, ...options.limits };
   const maxRepairs = options.maxRepairs ?? 2;
@@ -196,9 +197,7 @@ function resolveChecker(choice: CheckerKind | Checker): Checker {
     case 'in-process':
       return new InProcessChecker();
     case 'tsgo':
-      throw new CheckerUnavailableError(
-        'The tsgo checker backend lands in the next milestone; use "in-process" for now.',
-      );
+      return new FallbackChecker(new TsgoChecker(), () => new InProcessChecker(), 'tsgo');
   }
 }
 
