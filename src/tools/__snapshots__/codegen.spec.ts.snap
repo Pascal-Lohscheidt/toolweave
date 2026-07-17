@@ -1,0 +1,35 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateDeclarations > matches the full snapshot for a representative toolset 1`] = `
+"declare const console: {
+  log(...args: unknown[]): void;
+  warn(...args: unknown[]): void;
+  error(...args: unknown[]): void;
+};
+
+/**
+ * Get current weather for a city.
+ * Uses the nearest station.
+ */
+declare function getWeather(input: {
+  /** City name */
+  city: string;
+  /** @default "c" */
+  unit?: 'c' | 'f';
+}): Promise<{
+  tempC: number;
+  description: string;
+}>;
+
+/** Full-text search over the knowledge base */
+declare function searchDocs(input: {
+  /** The search query */
+  query: string;
+  /** @default 5 */
+  limit?: number;
+}): Promise<{
+  id: string;
+  text: string;
+}[]>;
+"
+`;
