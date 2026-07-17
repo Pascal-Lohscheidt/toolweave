@@ -1,0 +1,116 @@
+# CircleCI pipeline for toolweave.
+#
+# Publishing model (same as the m4trix monorepo):
+# - A merge to `main` triggers the pipeline; git tags `toolweave@<version>`
+#   are the version source of truth, created BY the pipeline, not by hand.
+# - scripts/check-publish-needed.ts halts the publish job when nothing
+#   relevant changed since the last tag.
+# - scripts/bump-and-tag.ts derives the semver bump from conventional
+#   commits, writes package.json (uncommitted), tags, and pushes the tag.
+#
+# Required project setup:
+# - Context `NPM` providing NPM_TOKEN (npm publish access for `toolweave`).
+# - To push tags, add a GitHub deploy key WITH WRITE ACCESS in
+#   Project Settings → SSH Keys → Additional SSH Keys, and prefer it over
+#   the default read-only checkout key.
+
+version: 2.1
+
+executors:
+  node:
+    docker:
+      - image: cimg/node:20.19
+    working_directory: ~/project
+
+commands:
+  setup:
+    steps:
+      - checkout
+      - run:
+          name: Enable pnpm
+          command: sudo corepack enable
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+
+jobs:
+  test:
+    executor: node
+    steps:
+      - setup
+      - run:
+          name: Unit + conformance tests (with typecheck)
+          command: |
+            mkdir -p test-results
+            pnpm exec vitest run --typecheck \
+              --reporter=default --reporter=junit \
+              --outputFile.junit=test-results/vitest.xml
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+      - run:
+          name: Coverage
+          command: pnpm exec vitest run --coverage
+      - store_artifacts:
+          path: coverage
+
+  lint:
+    executor: node
+    steps:
+      - setup
+      - run:
+          name: Lint
+          command: pnpm run lint
+
+  build:
+    executor: node
+    steps:
+      - setup
+      - run:
+          name: Build package
+          command: pnpm run build
+      - store_artifacts:
+          path: dist
+
+  publish:
+    executor: node
+    steps:
+      - setup
+      - run:
+          name: Fetch tags
+          command: git fetch --force --tags origin
+      - run:
+          name: Skip when nothing relevant changed since the last tag
+          command: pnpm run release:check || circleci-agent step halt
+      - run:
+          name: Bump version from conventional commits, tag, push tag
+          command: pnpm run release:bump
+      - run:
+          name: Build package
+          command: pnpm run build
+      - run:
+          name: Authenticate npm
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run:
+          name: Publish to npm
+          command: pnpm run publish-package
+
+workflows:
+  test-and-build:
+    jobs:
+      - test
+      - lint
+      - build:
+          requires:
+            - test
+            - lint
+      - publish:
+          context:
+            - NPM
+          requires:
+            - test
+            - build
+          filters:
+            branches:
+              only: main
