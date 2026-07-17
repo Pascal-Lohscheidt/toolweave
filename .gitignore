@@ -1,0 +1,10 @@
+node_modules/
+dist/
+out/
+coverage/
+test-results/
+.turbo/
+.env
+*.local
+*.log
+.DS_Store

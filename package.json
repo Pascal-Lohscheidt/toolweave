@@ -1,0 +1,108 @@
+{
+  "name": "toolweave",
+  "version": "0.1.0",
+  "description": "Typed code-mode tool orchestration for LLM agents: tools become TypeScript declarations, generated programs are type-checked (routeable checker backends), repaired via diagnostics, and executed in a QuickJS sandbox.",
+  "keywords": [
+    "agents",
+    "code-mode",
+    "langgraph",
+    "llm",
+    "quickjs",
+    "sandbox",
+    "tools",
+    "tsgo",
+    "type-checking",
+    "typescript"
+  ],
+  "homepage": "https://github.com/Pascal-Lohscheidt/toolweave#readme",
+  "bugs": {
+    "url": "https://github.com/Pascal-Lohscheidt/toolweave/issues"
+  },
+  "license": "MIT",
+  "author": "Pascal Lohscheidt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pascal-Lohscheidt/toolweave.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./adapters/langgraph": {
+      "import": {
+        "types": "./dist/adapters/langgraph.d.mts",
+        "default": "./dist/adapters/langgraph.mjs"
+      },
+      "require": {
+        "types": "./dist/adapters/langgraph.d.cts",
+        "default": "./dist/adapters/langgraph.cjs"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vp test --run",
+    "test:watch": "vp test",
+    "test:coverage": "vp test --run --coverage",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "build": "vp pack",
+    "bench": "vitest bench --run",
+    "release:check": "jiti scripts/check-publish-needed.ts",
+    "release:bump": "jiti scripts/bump-and-tag.ts",
+    "changelog": "jiti scripts/generate-changelog.ts",
+    "publish-package": "npm publish --no-git-checks"
+  },
+  "dependencies": {
+    "@jitl/quickjs-singlefile-mjs-release-sync": "^0.32.0",
+    "amaro": "^1.1.11",
+    "quickjs-emscripten-core": "^0.32.0"
+  },
+  "devDependencies": {
+    "@jitl/quickjs-singlefile-mjs-debug-sync": "^0.32.0",
+    "@types/node": "^20.19.0",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "jiti": "^2.7.0",
+    "typescript": "^5.9.0",
+    "vite-plus": "^0.2.5",
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@langchain/core": ">=0.3.0",
+    "@typescript/native-preview": "*",
+    "typescript": ">=5.5.0",
+    "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@langchain/core": {
+      "optional": true
+    },
+    "@typescript/native-preview": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
