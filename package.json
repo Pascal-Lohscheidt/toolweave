@@ -79,9 +79,11 @@
     "@jitl/quickjs-singlefile-mjs-debug-sync": "^0.32.0",
     "@types/node": "^20.19.0",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "@vitest/coverage-v8": "^4.1.10",
     "jiti": "^2.7.0",
     "typescript": "^5.9.0",
     "vite-plus": "^0.2.5",
+    "vitest": "^4.1.10",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
