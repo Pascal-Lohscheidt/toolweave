@@ -87,7 +87,7 @@
   "peerDependencies": {
     "@langchain/core": ">=0.3.0",
     "@typescript/native-preview": "*",
-    "typescript": ">=5.5.0",
+    "typescript": ">=5.5.0 <7",
     "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
