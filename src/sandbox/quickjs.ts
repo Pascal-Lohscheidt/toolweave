@@ -65,7 +65,9 @@ export class QuickJSSandbox implements Sandbox {
 
     const runtime = module.newRuntime();
     runtime.setMemoryLimit(limits.memoryMb * 1024 * 1024);
-    runtime.setMaxStackSize(1_000_000);
+    // Must stay well below the wasm/host stack, or deep guest recursion
+    // exhausts the host stack before QuickJS can raise its own error.
+    runtime.setMaxStackSize(256 * 1024);
     const deadline = Date.now() + limits.timeoutMs;
     let interrupted = false;
     runtime.setInterruptHandler(() => {
@@ -223,11 +225,11 @@ export class QuickJSSandbox implements Sandbox {
     if (interrupted || /interrupted/i.test(message)) {
       return new SandboxTimeoutError('Program exceeded its time budget and was interrupted.');
     }
-    if (/out of memory/i.test(message) || err.name === 'InternalError') {
-      return new SandboxMemoryError('Program exceeded its memory limit.');
-    }
     if (/stack overflow/i.test(message)) {
       return new SandboxStackError('Program exceeded the guest stack size.');
+    }
+    if (/out of memory/i.test(message) || err.name === 'InternalError') {
+      return new SandboxMemoryError('Program exceeded its memory limit.');
     }
     return new SandboxRuntimeError(
       message,
