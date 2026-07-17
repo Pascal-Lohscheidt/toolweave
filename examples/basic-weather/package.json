@@ -1,0 +1,16 @@
+{
+  "name": "@toolweave-examples/basic-weather",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "jiti index.ts"
+  },
+  "dependencies": {
+    "toolweave": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "jiti": "^2.7.0",
+    "typescript": "^5.9.0"
+  }
+}

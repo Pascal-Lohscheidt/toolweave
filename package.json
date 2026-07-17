@@ -77,6 +77,7 @@
   },
   "devDependencies": {
     "@jitl/quickjs-singlefile-mjs-debug-sync": "^0.32.0",
+    "@langchain/core": "^1.2.3",
     "@types/node": "^20.19.0",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "@vitest/coverage-v8": "^4.1.10",

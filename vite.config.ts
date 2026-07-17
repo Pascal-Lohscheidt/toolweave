@@ -27,6 +27,7 @@ export default defineConfig({
   pack: {
     entry: {
       index: 'src/index.ts',
+      'adapters/langgraph': 'src/adapters/langgraph.ts',
     },
     format: ['esm', 'cjs'],
     platform: 'node',
