@@ -105,6 +105,24 @@ export function runCheckerConformance(name: string, makeChecker: () => Checker):
       expect(errorsOn(diagnostics).length).toBeGreaterThan(0);
     });
 
+    it('turns a missing top-level return into an actionable diagnostic', async () => {
+      // The classic failure mode: the model wraps its logic in its own
+      // function and calls it as the last statement instead of returning.
+      const diagnostics = await check(
+        [
+          'async function main() {',
+          "  return await searchDocs({ query: 'x' });",
+          '}',
+          'main();',
+        ].join('\n'),
+      );
+      const errors = errorsOn(diagnostics);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors[0]!.code).toBe(2355);
+      expect(errors[0]!.line).toBe(1);
+      expect(errors[0]!.message).toMatch(/top-level `return/);
+    });
+
     it('is warm: repeated checks return consistent results', async () => {
       const clean = "return await getWeather({ city: 'Rome' });";
       for (let i = 0; i < 3; i++) {

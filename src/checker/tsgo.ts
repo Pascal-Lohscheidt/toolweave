@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { TsgoUnavailableError } from '../errors';
-import { wrapProgram } from '../program/wrap';
+import { wrapProgram, wrapperDiagnosticMessage } from '../program/wrap';
 import type { Checker, Diagnostic } from '../types';
 import { CHECK_COMPILER_OPTIONS, DECLS_FILE, MAIN_FILE } from './check-options';
 import { JsonRpcConnection } from './lsp/jsonrpc';
@@ -136,13 +136,18 @@ export class TsgoChecker implements Checker {
       const sourceLineCount = source.split('\n').length;
       return items
         .filter((d) => (d.severity ?? 1) <= 2)
-        .map((d) => ({
-          message: d.message,
-          line: clamp(d.range.start.line + 1 - wrapped.lineOffset, 1, sourceLineCount),
-          column: d.range.start.character + 1,
-          code: typeof d.code === 'number' ? d.code : Number(d.code) || 0,
-          severity: d.severity === 2 ? ('warning' as const) : ('error' as const),
-        }));
+        .map((d) => {
+          const mapped = d.range.start.line + 1 - wrapped.lineOffset;
+          const code = typeof d.code === 'number' ? d.code : Number(d.code) || 0;
+          const friendly = mapped < 1 ? wrapperDiagnosticMessage(code) : undefined;
+          return {
+            message: friendly ?? d.message,
+            line: clamp(mapped, 1, sourceLineCount),
+            column: friendly !== undefined ? 1 : d.range.start.character + 1,
+            code,
+            severity: d.severity === 2 ? ('warning' as const) : ('error' as const),
+          };
+        });
     } catch (error) {
       // A failed request leaves the server state unknown; restart next time.
       await this.teardownSession();

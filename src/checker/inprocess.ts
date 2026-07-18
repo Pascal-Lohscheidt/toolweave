@@ -1,6 +1,6 @@
 import type TS from 'typescript';
 import { CheckerUnavailableError } from '../errors';
-import { wrapProgram } from '../program/wrap';
+import { wrapProgram, wrapperDiagnosticMessage } from '../program/wrap';
 import type { Checker, Diagnostic } from '../types';
 import { CHECK_COMPILER_OPTIONS, DECLS_FILE, MAIN_FILE } from './check-options';
 
@@ -80,13 +80,22 @@ export class InProcessChecker implements Checker {
       if (d.file !== undefined && d.file.fileName !== MAIN) continue;
       let line = 1;
       let column = 1;
+      let message = ts.flattenDiagnosticMessageText(d.messageText, ' ');
       if (d.file !== undefined && d.start !== undefined) {
         const pos = d.file.getLineAndCharacterOfPosition(d.start);
-        line = clamp(pos.line + 1 - wrapped.lineOffset, 1, sourceLineCount);
+        const mapped = pos.line + 1 - wrapped.lineOffset;
+        line = clamp(mapped, 1, sourceLineCount);
         column = pos.character + 1;
+        if (mapped < 1) {
+          const friendly = wrapperDiagnosticMessage(d.code);
+          if (friendly !== undefined) {
+            message = friendly;
+            column = 1;
+          }
+        }
       }
       diagnostics.push({
-        message: ts.flattenDiagnosticMessageText(d.messageText, ' '),
+        message,
         line,
         column,
         code: d.code,
