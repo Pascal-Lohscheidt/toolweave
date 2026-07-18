@@ -21,6 +21,12 @@ export async function buildAgent() {
   const agent = createReactAgent({
     llm: await pickModel(),
     tools: [asLangGraphTool(runtime)],
+    prompt:
+      'You are the assistant of a small outdoor shop. Answer every data question by writing a ' +
+      'TypeScript program for the execute_typescript tool. Always fetch data through the ' +
+      'declared tool functions — never answer from memory or hardcode data you saw in earlier ' +
+      'turns, since stock, orders, and prices change. When building multi-line strings, use ' +
+      'template literals, never quoted strings with raw line breaks.',
   });
   return { agent, runtime };
 }

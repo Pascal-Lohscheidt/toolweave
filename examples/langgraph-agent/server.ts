@@ -68,7 +68,9 @@ const server = http.createServer((req, res) => {
         const { messages } = JSON.parse(await readBody(req)) as {
           messages: Array<{ role: 'user' | 'assistant'; content: string }>;
         };
-        const { agent } = await ready;
+        const { agent, runtime } = await ready;
+        // Repair attempts are budgeted per user request, not per server lifetime.
+        runtime.resetRepairs();
         const result = await agent.invoke({ messages });
         const steps = serializeNewMessages(result.messages as unknown[], messages.length);
         res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ steps }));
