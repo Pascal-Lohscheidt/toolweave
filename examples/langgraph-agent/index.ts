@@ -11,8 +11,9 @@ const result = await agent.invoke({
     {
       role: 'user',
       content:
-        'Which outdoor products under 90 euros are actually in stock? ' +
-        'Answer with name, price, and units available, cheapest first.',
+        'Anna (anna@example.com) wants every in-stock product under 100 euros with an average ' +
+        'review rating of at least 4. For the cheapest match, how much would shipping to her ' +
+        'address cost, and what is the total in CHF?',
     },
   ],
 });
