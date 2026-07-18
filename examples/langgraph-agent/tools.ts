@@ -274,14 +274,16 @@ const productSummary = z.object({
 
 const searchProducts = defineTool({
   name: 'searchProducts',
-  description: 'Search the product catalog. All filters are optional and combined with AND.',
+  description:
+    'Search the product catalog. All filters are optional and combined with AND; ' +
+    'call it without arguments to list the entire catalog.',
   input: z.object({
     query: z.string().optional().describe('Substring match on name and description'),
     category: z.enum(['outdoor', 'apparel', 'electronics', 'nutrition']).optional(),
     tag: z.string().optional(),
     maxPrice: z.number().optional().describe('Maximum price in EUR'),
     sortBy: z.enum(['price', 'name']).default('price'),
-    limit: z.number().int().positive().default(10),
+    limit: z.number().int().positive().default(50),
   }),
   output: z.array(productSummary),
   impl: async ({ query, category, tag, maxPrice, sortBy, limit }) => {
