@@ -94,8 +94,17 @@ jobs:
       - run:
           name: Publish to npm (OIDC trusted publishing)
           command: |
-            export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
-            pnpm run publish-package
+            # cimg Node images ship npm 10.x; trusted publishing needs >=11.5.1
+            # (CircleCI OIDC support landed around 11.11).
+            sudo npm install -g npm@latest
+            npm --version
+            export NPM_ID_TOKEN
+            NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
+            if [ -z "$NPM_ID_TOKEN" ]; then
+              echo "Failed to obtain NPM_ID_TOKEN from CircleCI OIDC" >&2
+              exit 1
+            fi
+            npm publish --no-git-checks
 
 workflows:
   test-and-build:
