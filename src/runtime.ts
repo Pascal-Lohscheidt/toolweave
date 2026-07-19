@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import {
   SandboxMemoryError,
   SandboxRuntimeError,
@@ -41,21 +41,11 @@ export interface RuntimeOptions {
   limits?: Partial<SandboxLimits>;
 }
 
-export interface ExecuteTypescriptToolDescriptor {
-  name: 'execute_typescript';
-  description: string;
-  inputSchema: z.ZodType<{ code: string }>;
-  inputJsonSchema: Record<string, unknown>;
-  execute(input: { code: string }): Promise<string>;
-}
-
 export interface ToolweaveRuntime {
   /** The generated tool declarations — hand this to the model in its prompt. */
   declarations(): string;
   /** Check → transpile → run one generated program. Never calls an LLM. */
   execute(code: string): Promise<ExecutionResult>;
-  /** The whole loop packaged as one framework-agnostic tool. */
-  asTool(): ExecuteTypescriptToolDescriptor;
   /** Reset the repair counter, e.g. when a new conversation starts. */
   resetRepairs(): void;
   dispose(): Promise<void>;
@@ -125,59 +115,9 @@ export function createRuntime(options: RuntimeOptions): ToolweaveRuntime {
     }
   }
 
-  function asTool(): ExecuteTypescriptToolDescriptor {
-    return {
-      name: 'execute_typescript',
-      description: buildToolDescription(decls),
-      inputSchema: z.object({ code: z.string() }),
-      inputJsonSchema: {
-        type: 'object',
-        properties: {
-          code: {
-            type: 'string',
-            description:
-              'A TypeScript program body (statements only, no import/export). ' +
-              'Produce the final result with a return statement.',
-          },
-        },
-        required: ['code'],
-      },
-      execute: async ({ code }) => renderResult(await execute(code)),
-    };
-  }
-
-  function renderResult(result: ExecutionResult): string {
-    if (result.ok) {
-      const logs = result.logs.length > 0 ? `\nLogs:\n${result.logs.join('\n')}` : '';
-      return `Result:\n${JSON.stringify(result.value, null, 2)}${logs}`;
-    }
-    switch (result.phase) {
-      case 'check': {
-        const list = result.diagnostics
-          .map((d, i) => `${i + 1}. line ${d.line}, col ${d.column}: TS${d.code} ${d.message}`)
-          .join('\n');
-        const followUp =
-          result.repairsRemaining > 0
-            ? `Fix these errors and call execute_typescript again with the corrected program. ` +
-              `${result.repairsRemaining} repair attempt${result.repairsRemaining === 1 ? '' : 's'} remaining.`
-            : 'Do not retry; report the problem to the user instead.';
-        return `Type errors:\n${list}\n\n${followUp}`;
-      }
-      case 'runtime': {
-        const at = result.error.line !== undefined ? ` (line ${result.error.line})` : '';
-        const logs =
-          result.logs.length > 0 ? `\nLogs before failure:\n${result.logs.join('\n')}` : '';
-        return `Runtime error${at}: ${result.error.name}: ${result.error.message}${logs}`;
-      }
-      case 'limit':
-        return `Execution aborted: program exceeded its ${result.kind} limit.`;
-    }
-  }
-
   return {
     declarations: () => decls,
     execute,
-    asTool,
     resetRepairs: () => {
       repairAttempts = 0;
     },
@@ -244,20 +184,4 @@ function formatZodError(error: z.ZodError): string {
   return error.issues
     .map((i) => (i.path.length > 0 ? `${i.path.join('.')}: ${i.message}` : i.message))
     .join('; ');
-}
-
-function buildToolDescription(decls: string): string {
-  return [
-    'Execute a TypeScript program that orchestrates the declared tools.',
-    'Write plain statements (no import/export, no top-level function wrapper);',
-    '`await` is available, and the final result must be produced with `return`.',
-    'Intermediate data stays out of your context — only the returned value and',
-    'console logs come back. The program is type-checked before it runs; if type',
-    'errors come back, fix them and resubmit.',
-    '',
-    'Available declarations:',
-    '```typescript',
-    decls.trimEnd(),
-    '```',
-  ].join('\n');
 }

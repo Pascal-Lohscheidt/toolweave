@@ -95,8 +95,9 @@ jobs:
           name: Publish to npm (OIDC trusted publishing)
           command: |
             # cimg Node images ship npm 10.x; trusted publishing needs >=11.5.1
-            # (CircleCI OIDC support landed around 11.11).
-            sudo npm install -g npm@latest
+            # (CircleCI OIDC support landed around 11.11). Pin to npm 11 —
+            # npm@latest (12+) requires Node >=22.22.2, newer than this image.
+            sudo npm install -g npm@11
             npm --version
             export NPM_ID_TOKEN
             NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')

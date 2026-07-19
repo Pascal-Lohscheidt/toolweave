@@ -1,5 +1,6 @@
 import { tool } from '@langchain/core/tools';
 import type { ToolweaveRuntime } from '../runtime';
+import { asTool } from './descriptor';
 
 /**
  * Expose a toolweave runtime as a LangChain/LangGraph structured tool.
@@ -10,7 +11,7 @@ import type { ToolweaveRuntime } from '../runtime';
  * talks to the LLM itself.
  */
 export function asLangGraphTool(runtime: ToolweaveRuntime) {
-  const descriptor = runtime.asTool();
+  const descriptor = asTool(runtime);
   return tool(async (input) => descriptor.execute(input as { code: string }), {
     name: descriptor.name,
     description: descriptor.description,

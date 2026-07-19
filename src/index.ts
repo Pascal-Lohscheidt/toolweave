@@ -1,5 +1,7 @@
 export { createRuntime } from './runtime';
-export type { ExecuteTypescriptToolDescriptor, RuntimeOptions, ToolweaveRuntime } from './runtime';
+export type { RuntimeOptions, ToolweaveRuntime } from './runtime';
+export { asTool } from './adapters/descriptor';
+export type { ExecuteTypescriptToolDescriptor } from './adapters/descriptor';
 export { generateDeclarations } from './tools/codegen';
 export { NoneChecker } from './checker/none';
 export { InProcessChecker } from './checker/inprocess';

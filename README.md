@@ -113,7 +113,8 @@ const runtime = createRuntime({
 });
 
 // One tool for any agent framework — description includes the declarations:
-const codeTool = runtime.asTool();
+import { asTool } from 'toolweave';
+const codeTool = asTool(runtime);
 // { name: 'execute_typescript', description, inputSchema, inputJsonSchema, execute }
 
 // …or drive it yourself:
@@ -165,7 +166,7 @@ type ExecutionResult =
   | { ok: false; phase: 'limit'; kind: 'timeout' | 'memory' | 'stack'; logs: string[] };
 ```
 
-`asTool()` renders these as model-friendly text: numbered diagnostics with a countdown of
+`asTool(runtime)` renders these as model-friendly text: numbered diagnostics with a countdown of
 repair attempts, runtime errors with the mapped source line, and a hard stop
 ("Do not retry; report the problem to the user") once the budget is spent.
 `runtime.resetRepairs()` starts a fresh budget — call it once per user request.
@@ -217,7 +218,7 @@ no `.wasm` resolution issues in bundlers or test runners):
 | `createRuntime({ tools, checker?, sandbox?, maxRepairs?, limits? })`                                          | The runtime; all options have working defaults.                                               |
 | `runtime.declarations()`                                                                                      | The generated `.d.ts` string, if you want it in your system prompt.                           |
 | `runtime.execute(code)`                                                                                       | Check → strip → run. Returns an `ExecutionResult`.                                            |
-| `runtime.asTool()`                                                                                            | Framework-agnostic `execute_typescript` tool descriptor.                                      |
+| `asTool(runtime)`                                                                                             | Framework-agnostic `execute_typescript` tool descriptor — the port custom adapters build on.  |
 | `runtime.resetRepairs()` / `runtime.dispose()`                                                                | Fresh repair budget / tear down checker subprocess and sandbox.                               |
 | `asLangGraphTool(runtime)`                                                                                    | LangChain `StructuredTool` (subpath `toolweave/adapters/langgraph`).                          |
 | `TsgoChecker`, `InProcessChecker`, `NoneChecker`, `FallbackChecker`, `QuickJSSandbox`, `generateDeclarations` | The building blocks, exported for custom wiring.                                              |
