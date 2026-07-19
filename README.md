@@ -268,9 +268,10 @@ Merges to `main` publish automatically via CircleCI:
    (`feat` → minor, `fix`/`perf` → patch, breaking → major; pre-1.0 breaking → minor), writes
    `package.json` (uncommitted — git tags `toolweave@<version>` are the source of truth), tags,
    and pushes the tag.
-3. The package is built and published with `npm publish --no-git-checks`.
+3. The package is built and published with `npm publish --no-git-checks` via
+   npm **trusted publishing** (CircleCI OIDC — no long-lived `NPM_TOKEN`).
 
-One-time CircleCI project setup: attach a context named **`NPM`** containing `NPM_TOKEN`, and
+One-time setup: configure a CircleCI trusted publisher on the npm package, and
 add a GitHub **deploy key with write access** so the pipeline can push release tags.
 `pnpm changelog` regenerates `CHANGELOG.md`.
 

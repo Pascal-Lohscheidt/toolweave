@@ -1,12 +1,10 @@
 import { z } from 'zod';
 import {
-  SandboxError,
   SandboxMemoryError,
   SandboxRuntimeError,
   SandboxStackError,
   SandboxTimeoutError,
   ToolCallError,
-  ToolweaveError,
 } from './errors';
 import { EXECUTE_SUFFIX, wrapProgram } from './program/wrap';
 import { QuickJSSandbox } from './sandbox/quickjs';
@@ -121,7 +119,6 @@ export function createRuntime(options: RuntimeOptions): ToolweaveRuntime {
           logs,
         };
       }
-      if (error instanceof SandboxError || error instanceof ToolweaveError) throw error;
       throw error;
     }
   }
