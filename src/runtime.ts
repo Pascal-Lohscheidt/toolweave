@@ -96,14 +96,16 @@ export function createRuntime(options: RuntimeOptions): ToolweaveRuntime {
       });
       return { ok: true, value, logs };
     } catch (error) {
-      if (error instanceof SandboxTimeoutError) {
-        return { ok: false, phase: 'limit', kind: 'timeout', logs };
-      }
-      if (error instanceof SandboxMemoryError) {
-        return { ok: false, phase: 'limit', kind: 'memory', logs };
-      }
-      if (error instanceof SandboxStackError) {
-        return { ok: false, phase: 'limit', kind: 'stack', logs };
+      const limitKind =
+        error instanceof SandboxTimeoutError
+          ? 'timeout'
+          : error instanceof SandboxMemoryError
+            ? 'memory'
+            : error instanceof SandboxStackError
+              ? 'stack'
+              : undefined;
+      if (limitKind !== undefined) {
+        return { ok: false, phase: 'limit', kind: limitKind, logs };
       }
       if (error instanceof SandboxRuntimeError) {
         return {
