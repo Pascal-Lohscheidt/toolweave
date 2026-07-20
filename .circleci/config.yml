@@ -106,7 +106,7 @@ jobs:
               echo "Failed to obtain NPM_ID_TOKEN from CircleCI OIDC" >&2
               exit 1
             fi
-            npm publish --no-git-checks
+            npm publish
 
 workflows:
   test-and-build:

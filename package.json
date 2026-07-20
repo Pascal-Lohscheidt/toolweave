@@ -68,7 +68,7 @@
     "release:check": "jiti scripts/check-publish-needed.ts",
     "release:bump": "jiti scripts/bump-and-tag.ts",
     "changelog": "jiti scripts/generate-changelog.ts",
-    "publish-package": "npm publish --no-git-checks"
+    "publish-package": "npm publish"
   },
   "dependencies": {
     "@jitl/quickjs-singlefile-mjs-release-sync": "^0.32.0",

@@ -269,7 +269,7 @@ Merges to `main` publish automatically via CircleCI:
    (`feat` → minor, `fix`/`perf` → patch, breaking → major; pre-1.0 breaking → minor), writes
    `package.json` (uncommitted — git tags `toolweave@<version>` are the source of truth), tags,
    and pushes the tag.
-3. The package is built and published with `npm publish --no-git-checks` via
+3. The package is built and published with `npm publish` via
    npm **trusted publishing** (CircleCI OIDC — no long-lived `NPM_TOKEN`).
 
 One-time setup: configure a CircleCI trusted publisher on the npm package, and
