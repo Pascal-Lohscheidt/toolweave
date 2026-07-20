@@ -30,6 +30,7 @@ export class FallbackChecker implements Checker {
       this.fellBack = true;
       const failed = this.active;
       this.active = this.makeFallback();
+      /* v8 ignore next -- one-shot best-effort cleanup; the rejection handler rarely fires */
       await failed.dispose?.().catch(() => undefined);
       return this.active.check(source, decls);
     }

@@ -44,14 +44,26 @@ describe('JsonRpcConnection', () => {
     await expect(p2).resolves.toBe('two');
   });
 
-  it('rejects on error responses and on timeouts', async () => {
+  it('rejects a request when the server returns an error response', async () => {
     const { fromServer, connection } = setup();
     const failing = connection.request('x', null, 1_000);
     fromServer.write(frame({ jsonrpc: '2.0', id: 1, error: { code: -32601, message: 'nope' } }));
     await expect(failing).rejects.toThrow(JsonRpcError);
+  });
 
+  it('rejects a request that outlives its timeout', async () => {
+    const { connection } = setup();
     const timingOut = connection.request('y', null, 20);
     await expect(timingOut).rejects.toThrow(/timed out/);
+  });
+
+  it('drops an unparseable frame and resyncs on the next one', async () => {
+    const { fromServer, connection } = setup();
+    const pending = connection.request('x', null, 1_000);
+    // A header with no Content-Length: the reader must discard it and recover.
+    fromServer.write(Buffer.from('Bogus-Header: 1\r\n\r\n', 'ascii'));
+    fromServer.write(frame({ jsonrpc: '2.0', id: 1, result: 'recovered' }));
+    await expect(pending).resolves.toBe('recovered');
   });
 
   it('dispatches notifications and answers server requests', async () => {

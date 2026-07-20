@@ -15,6 +15,7 @@ export function stripTypes(source: string): string {
     return transformSync(source, { mode: 'strip-only' }).code;
   } catch (cause) {
     throw new TranspileError(
+      // v8 ignore next -- amaro's transformSync always throws Error, so String(cause) is defensive
       `Type stripping failed: ${cause instanceof Error ? cause.message : String(cause)}`,
       { cause },
     );

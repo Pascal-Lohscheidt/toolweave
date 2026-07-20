@@ -63,4 +63,46 @@ describe('createRuntime', () => {
     expect(seen).toEqual(['return 1;']);
     await custom.dispose();
   });
+
+  it('surfaces an output-schema violation as a runtime error', async () => {
+    const liar = defineTool({
+      name: 'liar',
+      description: 'Claims to return a number but returns a string',
+      input: z.object({}),
+      output: z.number(),
+      impl: async () => 'not a number' as unknown as number,
+    });
+    const runtime = createRuntime({ tools: [liar], checker: 'none' });
+    const result = await runtime.execute('return await liar({});');
+    expect(result).toMatchObject({
+      ok: false,
+      phase: 'runtime',
+    });
+    if (!result.ok && result.phase === 'runtime') {
+      expect(result.error.message).toContain('does not match its output schema');
+    }
+    await runtime.dispose();
+  });
+
+  it('resolves the built-in tsgo checker kind (behind the in-process fallback)', async () => {
+    // Construction is lazy — this wires up the FallbackChecker without spawning
+    // tsgo, so it stays a fast unit test.
+    const runtime = createRuntime({ tools: [echo], checker: 'tsgo' });
+    expect(runtime.declarations()).toContain('declare function echo');
+    await runtime.dispose();
+  });
+
+  it('rethrows an unrecognized sandbox failure instead of swallowing it', async () => {
+    const runtime = createRuntime({
+      tools: [echo],
+      checker: 'none',
+      sandbox: {
+        run: async () => {
+          throw new Error('sandbox exploded');
+        },
+      },
+    });
+    await expect(runtime.execute('return 1;')).rejects.toThrow('sandbox exploded');
+    await runtime.dispose();
+  });
 });

@@ -43,8 +43,9 @@ if (tsgoAvailable) {
   });
 } else {
   describe.skip('checker conformance: tsgo (binary unavailable)', () => {
-    it('skipped', () => {
-      expect(true).toBe(true);
+    it('runs the shared checker conformance suite against the tsgo backend', () => {
+      // Placeholder so the skip is reported with a meaningful name; the real
+      // suite is registered by runCheckerConformance() when tsgo is present.
     });
   });
 }

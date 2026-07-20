@@ -78,11 +78,13 @@ function isObjectSchema(schema: JsonSchema): boolean {
 
 /** Render a JSON-Schema node as TypeScript type text. `depth` controls indentation. */
 function printType(schema: JsonSchema, depth: number, tool: AnyTool): string {
+  /* v8 ignore start -- defensive: Zod never emits $ref/recursive schemas for tool IO */
   if (schema.$ref !== undefined) {
     throw new ToolDefinitionError(
       `Tool "${tool.name}": recursive or $ref-based schemas are not supported in tool IO.`,
     );
   }
+  /* v8 ignore stop */
   if (schema.const !== undefined) {
     return literal(schema.const);
   }
@@ -98,9 +100,11 @@ function printType(schema: JsonSchema, depth: number, tool: AnyTool): string {
   if (schema.allOf !== undefined) {
     return schema.allOf.map((m) => maybeParen(printType(m, depth, tool))).join(' & ');
   }
+  /* v8 ignore start -- defensive: Zod emits a single `type`, never an array of types */
   if (Array.isArray(schema.type)) {
     return schema.type.map((t) => printType({ ...schema, type: t }, depth, tool)).join(' | ');
   }
+  /* v8 ignore stop */
   switch (schema.type) {
     case 'string':
       return 'string';
@@ -118,10 +122,12 @@ function printType(schema: JsonSchema, depth: number, tool: AnyTool): string {
     case undefined:
       // An empty schema accepts anything (z.any() / z.unknown()).
       return 'unknown';
+    /* v8 ignore start -- defensive: Zod only emits the JSON-Schema types handled above */
     default:
       throw new ToolDefinitionError(
         `Tool "${tool.name}": unsupported JSON-Schema type "${schema.type}".`,
       );
+    /* v8 ignore stop */
   }
 }
 
@@ -184,6 +190,7 @@ function literal(value: unknown): string {
   if (typeof value === 'number' || typeof value === 'boolean' || value === null) {
     return String(value);
   }
+  /* v8 ignore next -- defensive: tool-IO literals are always string/number/boolean/null */
   return JSON.stringify(value);
 }
 

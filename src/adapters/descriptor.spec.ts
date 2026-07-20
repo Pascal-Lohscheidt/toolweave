@@ -12,7 +12,7 @@ const echo = defineTool({
   impl: async ({ message }) => message,
 });
 
-describe('asTool()', () => {
+describe('asTool', () => {
   const runtime = createRuntime({
     tools: [echo],
     checker: 'in-process',

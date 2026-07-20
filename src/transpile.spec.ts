@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { wrapProgram } from './program/wrap';
+import { TranspileError } from './errors';
 import { stripTypes } from './transpile';
 
 describe('stripTypes', () => {
@@ -23,5 +24,12 @@ describe('stripTypes', () => {
     const stripped = stripTypes(wrapProgram('const x = await f();\nreturn x;').text);
     expect(stripped).toContain('async function __main__()');
     expect(stripped).toContain('await f()');
+  });
+
+  it('wraps a strip failure in a TranspileError', () => {
+    // Unbalanced syntax the strip-only transform cannot parse. In normal use the
+    // checker rejects such programs first, so this path is purely defensive.
+    expect(() => stripTypes('const a: number = ;')).toThrow(TranspileError);
+    expect(() => stripTypes('const a: number = ;')).toThrow(/Type stripping failed/);
   });
 });

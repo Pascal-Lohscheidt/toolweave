@@ -81,6 +81,24 @@ describe('generateDeclarations', () => {
     expect(generateDeclarations([tool])).toContain('items: (string | number)[];');
   });
 
+  it('renders intersections, numeric-literal unions, and boolean literals', () => {
+    const tool = defineTool({
+      name: 'combo',
+      description: 'Intersections and non-string literals',
+      input: z.object({
+        merged: z.object({ a: z.string() }).and(z.object({ b: z.number() })),
+        level: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+        flag: z.literal(true),
+      }),
+      output: z.null(),
+      impl: async () => null,
+    });
+    const decls = generateDeclarations([tool]);
+    expect(decls).toMatch(/a: string;[\s\S]*\} & \{[\s\S]*b: number;/);
+    expect(decls).toContain('level: 1 | 2 | 3;');
+    expect(decls).toContain('flag: true;');
+  });
+
   it('quotes non-identifier property keys', () => {
     const tool = defineTool({
       name: 'weird',

@@ -42,19 +42,20 @@ jobs:
     steps:
       - setup
       - run:
-          name: Unit + conformance tests (with typecheck)
+          name: Tests + typecheck + coverage gate
           command: |
             mkdir -p test-results
-            pnpm exec vitest run --typecheck \
+            # A single pass runs the unit + conformance suites with typecheck
+            # AND enforces the coverage thresholds in vite.config.ts. If coverage
+            # regresses below those thresholds, vitest exits non-zero and this
+            # job fails — coverage is a gate here, not just a report.
+            pnpm exec vitest run --typecheck --coverage \
               --reporter=default --reporter=junit \
               --outputFile.junit=test-results/vitest.xml
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: test-results
-      - run:
-          name: Coverage
-          command: pnpm exec vitest run --coverage
       - store_artifacts:
           path: coverage
 
