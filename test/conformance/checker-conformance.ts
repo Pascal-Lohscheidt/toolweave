@@ -31,8 +31,10 @@ const errorsOn = (diagnostics: Diagnostic[]) => diagnostics.filter((d) => d.seve
 export function runCheckerConformance(name: string, makeChecker: () => Checker): void {
   describe(`checker conformance: ${name}`, () => {
     let checker: Checker;
-    beforeAll(() => {
+    beforeAll(async () => {
       checker = makeChecker();
+      // Pay LanguageService / tsgo cold-start outside individual tests.
+      await checker.check('return 1;', CONFORMANCE_DECLS);
     });
     afterAll(async () => {
       await checker.dispose?.();

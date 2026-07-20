@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createRuntime } from './runtime';
 import { defineTool } from './tools/define';
@@ -19,6 +19,10 @@ describe('createRuntime', () => {
     limits: { timeoutMs: 5_000, memoryMb: 32 },
   });
   afterAll(() => runtime.dispose());
+
+  beforeAll(async () => {
+    await runtime.execute('return 1;');
+  });
 
   it('exposes the generated declarations', () => {
     const decls = runtime.declarations();

@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createRuntime, defineTool } from '../src/index';
 
@@ -38,6 +38,10 @@ const runtime = createRuntime({
 afterAll(() => runtime.dispose());
 
 describe('end-to-end execute()', () => {
+  beforeAll(async () => {
+    await runtime.execute('return 1;');
+  });
+
   it('chains tool calls with data dependencies and returns only the final value', async () => {
     const result = await runtime.execute(
       [

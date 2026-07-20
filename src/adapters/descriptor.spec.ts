@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createRuntime } from '../runtime';
 import { defineTool } from '../tools/define';
@@ -21,6 +21,10 @@ describe('asTool()', () => {
   });
   const tool = asTool(runtime);
   afterAll(() => runtime.dispose());
+
+  beforeAll(async () => {
+    await runtime.execute('return 1;');
+  });
 
   it('describes itself with the declarations and program rules', () => {
     expect(tool.name).toBe('execute_typescript');

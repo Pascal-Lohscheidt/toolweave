@@ -13,6 +13,10 @@ export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts', 'test/**/*.spec.ts'],
     passWithNoTests: true,
+    // In-process checker cold-start (lib.*.d.ts parse) routinely exceeds the
+    // 5s default under CI load when several workers warm TypeScript at once.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     typecheck: {
       enabled: true,
       include: ['src/**/*.spec-d.ts'],

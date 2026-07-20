@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createRuntime } from '../runtime';
 import { defineTool } from '../tools/define';
@@ -17,6 +17,10 @@ afterAll(() => runtime.dispose());
 
 describe('asLangGraphTool', () => {
   const lcTool = asLangGraphTool(runtime);
+
+  beforeAll(async () => {
+    await runtime.execute('return 1;');
+  });
 
   it('produces a structured tool with the toolweave contract', () => {
     expect(lcTool.name).toBe('execute_typescript');
